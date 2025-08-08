@@ -3,34 +3,42 @@ package com.weiting.gymbuddy.game
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import kotlin.math.abs
 
 class GameManager : SensorHelper.SensorListener {
 
-    var curlCount by mutableStateOf(0)
+    var ballPositionX by mutableStateOf(0f)
         private set
 
-    private var lastY: Float? = null
-    private val threshold = 5.0f // This is a magic number, should be tuned
-    private var isMovingUp = false
+    var ballPositionY by mutableStateOf(0f)
+        private set
+
+    private var screenWidth = 0f
+    private var screenHeight = 0f
 
     override fun onSensorData(x: Float, y: Float, z: Float) {
-        val currentY = y
-        val lastY = this.lastY
+        // We invert the x and y values because the phone is held in landscape mode
+        // when attached to the arm for bicep curls.
+        // Also, the sensor's coordinate system is different from the screen's.
+        // A positive x acceleration should move the ball to the right.
+        // A positive y acceleration should move the ball down.
+        // This mapping might need to be adjusted based on how the phone is oriented.
+        ballPositionX -= x * 2.0f // Multiplier to make the movement more noticeable
+        ballPositionY += y * 2.0f
 
-        if (lastY != null) {
-            val deltaY = currentY - lastY
-            if (abs(deltaY) > threshold) {
-                if (deltaY > 0 && !isMovingUp) {
-                    // Moving up, start of a curl
-                    isMovingUp = true
-                } else if (deltaY < 0 && isMovingUp) {
-                    // Moving down, end of a curl
-                    curlCount++
-                    isMovingUp = false
-                }
-            }
+        // Clamp the ball's position to the screen boundaries
+        if (screenWidth > 0 && screenHeight > 0) {
+            ballPositionX = ballPositionX.coerceIn(0f, screenWidth)
+            ballPositionY = ballPositionY.coerceIn(0f, screenHeight)
         }
-        this.lastY = currentY
+    }
+
+    fun setScreenSize(width: Float, height: Float) {
+        screenWidth = width
+        screenHeight = height
+    }
+
+    fun setInitialBallPosition(x: Float, y: Float) {
+        ballPositionX = x
+        ballPositionY = y
     }
 }
