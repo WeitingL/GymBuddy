@@ -11,6 +11,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.weiting.gymbuddy.game.GameManager
@@ -47,12 +50,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GameScreen(gameManager: GameManager, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        LaunchedEffect(Unit) {
-            gameManager.setScreenSize(size.width, size.height)
-            gameManager.setInitialBallPosition(size.width * 0.1f, size.height * 0.2f)
-        }
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
 
+    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+
+    LaunchedEffect(Unit) {
+        gameManager.setScreenSize(screenWidthPx, screenHeightPx)
+        gameManager.setInitialBallPosition(screenWidthPx * 0.1f, screenHeightPx * 0.2f)
+    }
+
+    Canvas(modifier = modifier.fillMaxSize()) {
         val path = Path()
         path.moveTo(size.width * 0.1f, size.height * 0.2f)
         path.cubicTo(
