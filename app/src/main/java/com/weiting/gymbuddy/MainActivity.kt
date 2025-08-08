@@ -6,42 +6,45 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.weiting.gymbuddy.game.GameManager
+import com.weiting.gymbuddy.game.SensorHelper
 import com.weiting.gymbuddy.ui.theme.GymBuddyTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var sensorHelper: SensorHelper
+    private val gameManager = GameManager()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sensorHelper = SensorHelper(this)
+        sensorHelper.setListener(gameManager)
         enableEdgeToEdge()
         setContent {
             GymBuddyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                GameScreen(gameManager)
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        sensorHelper.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorHelper.stop()
+    }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun GameScreen(gameManager: GameManager, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
+        text = "Curl count: ${gameManager.curlCount}",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GymBuddyTheme {
-        Greeting("Android")
-    }
 }
