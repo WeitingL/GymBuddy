@@ -6,39 +6,21 @@ import androidx.compose.runtime.setValue
 
 class GameManager : SensorHelper.SensorListener {
 
-    var ballPositionX by mutableStateOf(0f)
+    var progress by mutableStateOf(0f)
         private set
 
-    var ballPositionY by mutableStateOf(0f)
-        private set
-
-    private var screenWidth = 0f
-    private var screenHeight = 0f
+    private var lastY: Float? = null
 
     override fun onSensorData(x: Float, y: Float, z: Float) {
-        // We invert the x and y values because the phone is held in landscape mode
-        // when attached to the arm for bicep curls.
-        // Also, the sensor's coordinate system is different from the screen's.
-        // A positive x acceleration should move the ball to the right.
-        // A positive y acceleration should move the ball down.
-        // This mapping might need to be adjusted based on how the phone is oriented.
-        ballPositionX -= x * 2.0f // Multiplier to make the movement more noticeable
-        ballPositionY += y * 2.0f
+        val currentY = y
+        val lastY = this.lastY
 
-        // Clamp the ball's position to the screen boundaries
-        if (screenWidth > 0 && screenHeight > 0) {
-            ballPositionX = ballPositionX.coerceIn(0f, screenWidth)
-            ballPositionY = ballPositionY.coerceIn(0f, screenHeight)
+        if (lastY != null) {
+            val deltaY = currentY - lastY
+            // The sensitivity of the movement can be adjusted by changing the multiplier.
+            progress += deltaY * 0.01f
+            progress = progress.coerceIn(0f, 1f)
         }
-    }
-
-    fun setScreenSize(width: Float, height: Float) {
-        screenWidth = width
-        screenHeight = height
-    }
-
-    fun setInitialBallPosition(x: Float, y: Float) {
-        ballPositionX = x
-        ballPositionY = y
+        this.lastY = currentY
     }
 }
